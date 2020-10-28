@@ -1,27 +1,25 @@
 {
-  "name": "larva-test-react",
+  "name": "larvaio-cloud-device-react-demo",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
+  "author": "Reijo Sirila <reijo@larva.io> (https://larva.io)",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.5",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
+    "@larva.io/clouddevice": "^2.0.3",
+    "@larva.io/webcomponents-cognito-login-react": "^2.0.2",
+    "@larva.io/webcomponents-react": "^1.0.0",
+    "prop-types": "^15.7.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-scripts": "4.0.0",
-    "web-vitals": "^0.2.4"
+    "react-scripts": "4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.12.1",
+    "eslint-config-airbnb": "^18.2.0"
   },
   "scripts": {
+    "lint": "eslint .",
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "build": "react-scripts build"
   },
   "browserslist": {
     "production": [
