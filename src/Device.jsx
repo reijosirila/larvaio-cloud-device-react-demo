@@ -15,7 +15,7 @@ export default class DeviceComponent extends Component {
   // device broadcast messages handler
   static async handleBroadcast(event /* @typeof CustomEvent */) {
     const detail = event && event.detail ? event.detail : {};
-    const nodeId = detail.evt || {};
+    const nodeId = detail.evt;
     const payload = detail.payload || {};
     if (!nodeId) {
       return;
