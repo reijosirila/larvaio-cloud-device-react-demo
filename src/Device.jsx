@@ -41,6 +41,7 @@ export default class DeviceComponent extends Component {
       timeout: 8000,
     });
     this.deviceClosed = this.deviceClosed.bind(this);
+    this.createReactComponent = this.createReactComponent.bind(this);
     // handle broadcasted changes
     this.device.addEventListener('broadcast', DeviceComponent.handleBroadcast);
     this.device.addEventListener('close', this.deviceClosed);
@@ -76,12 +77,32 @@ export default class DeviceComponent extends Component {
     });
   }
 
+  createReactComponent(node) {
+    if (!node || !node.ui || !node.node || !node.component) {
+      throw new Error('Invalid node object');
+    }
+    return React.createElement(node.component, {
+      color: 'primary',
+      colorInputs: 'primary',
+      colorModal: 'primary',
+      mainTitle: node.ui.name,
+      supTitle: node.ui.room ? node.ui.room.name : '',
+      subTitle: node.ui.category ? node.ui.category.name : '',
+      icon: node.ui.icon,
+      nodeId: node.node.id,
+      key: node.node.id,
+      log: node.ui.log,
+      onOutput: this.device.handleNodeOutput,
+      onRequest: this.device.handleNodeRequest,
+    });
+  }
+
   render() {
     const { loading, nodes, closed } = this.state;
     const Loading = loading ? <div>Loading...</div> : <span />;
     const Closed = closed ? <div>Device connection closed</div> : <span />;
     // load WebComponents from getUINodes response
-    const dynamicComponents = nodes
+    const nodesWithComponents = nodes
       // filter nodes that should be visible
       .filter((e) => !!e.ui.visible)
       // sort by rating
@@ -95,28 +116,28 @@ export default class DeviceComponent extends Component {
         return { ...item, component: Components[componentName] };
       })
       // filter nodes that doesnt have WebComponent
-      .filter((e) => !!e.component)
-      // wrap it up, set props and event listeners
-      .map((e) => React.createElement(e.component, {
-        color: 'primary',
-        colorInputs: 'primary',
-        colorModal: 'primary',
-        mainTitle: e.ui.name,
-        supTitle: e.ui.room ? e.ui.room.name : '',
-        subTitle: e.ui.category ? e.ui.category.name : '',
-        icon: e.ui.icon,
-        nodeId: e.node.id,
-        key: e.node.id,
-        log: e.ui.log,
-        onOutput: this.device.handleNodeOutput,
-        onRequest: this.device.handleNodeRequest,
-      }));
+      .filter((e) => !!e.component);
+
+    // wrap it up, set props and event listeners
+    const dynamicComponents = nodesWithComponents
+      .filter((e) => !e.ui.favorite)
+      .map(this.createReactComponent);
+
+    const dynamicFavoriteComponents = nodesWithComponents
+      .filter((e) => !!e.ui.favorite)
+      .map(this.createReactComponent);
+
     return (
       <div>
         {Loading}
         {Closed}
-        <Components.LarApp class="grid">
-          {dynamicComponents}
+        <Components.LarApp>
+          <div className="favorites-grid">
+            {dynamicFavoriteComponents}
+          </div>
+          <div className="grid">
+            {dynamicComponents}
+          </div>
         </Components.LarApp>
       </div>
     );

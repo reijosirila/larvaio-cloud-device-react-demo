@@ -12,3 +12,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(10rem, 50%));
   }  
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 100%));
+  }  
