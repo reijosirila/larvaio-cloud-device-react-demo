@@ -4,16 +4,16 @@
   "license": "MIT",
   "author": "Reijo Sirila <reijo@larva.io> (https://larva.io)",
   "dependencies": {
-    "@larva.io/clouddevice": "^2.0.3",
+    "@larva.io/clouddevice": "^2.0.7",
     "@larva.io/webcomponents-cognito-login-react": "^2.0.2",
-    "@larva.io/webcomponents-react": "^1.0.0",
+    "@larva.io/webcomponents-react": "^1.0.13",
     "prop-types": "^15.7.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-scripts": "4.0.0"
+    "react-scripts": "^4.0.1"
   },
   "devDependencies": {
-    "eslint": "^7.12.1",
+    "eslint": "^7.19.0",
     "eslint-config-airbnb": "^18.2.0"
   },
   "scripts": {
