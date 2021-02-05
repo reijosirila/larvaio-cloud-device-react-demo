@@ -1,33 +1,59 @@
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable no-alert */
 import { Component } from 'react';
-import { LarCognitoLogin } from '@larva.io/webcomponents-cognito-login-react';
 import PropTypes from 'prop-types';
+import { Device } from '@larva.io/clouddevice';
 
 export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
       loading: false,
+      username: '',
+      password: '',
     };
-    this.onLoading = this.onLoading.bind(this);
-    this.onLoginError = this.onLoginError.bind(this);
-    this.onLoginDone = this.onLoginDone.bind(this);
+    // eslint-disable-next-line react/destructuring-assignment
+    this.device = this.props.device;
+    this.handleUsernameChange = this.handleUsernameChange.bind(this);
+    this.handlePasswordChange = this.handlePasswordChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  onLoginError(event) {
-    alert(event.detail);
-  }
-
-  onLoginDone() {
-    const { onLoginDone } = this.props;
-    onLoginDone();
-  }
-
-  onLoading(event) {
+  handleUsernameChange(event) {
     this.setState({
-      loading: !!event.detail,
+      username: event.target.value,
     });
+  }
+
+  handlePasswordChange(event) {
+    this.setState({
+      password: event.target.value,
+    });
+  }
+
+  async handleSubmit(event) {
+    event.preventDefault();
+    this.setState({
+      loading: true,
+    });
+    try {
+      // console.warn('####', await this.device.request('iot-2/cmd/getUnits/fmt/json'));
+      // https://docs.larva.io/base/users
+      const res = await this.device.request('iot-2/cmd/login/fmt/json', {
+        username: this.state.username,
+        password: this.state.password,
+      });
+      if (!res.access_token) {
+        throw new Error('Invalid login response');
+      }
+      this.props.onLoginDone(res.access_token);
+    } catch (err) {
+      alert(`Login Error: ${err.message}`);
+    } finally {
+      this.setState({
+        loading: false,
+      });
+    }
   }
 
   render() {
@@ -36,12 +62,15 @@ export default class Login extends Component {
     return (
       <div>
         {Loading}
-        <LarCognitoLogin
-          cognitoUsernameAttribute="email"
-          onLoading={this.onLoading}
-          onLoginDone={this.onLoginDone}
-          onLoginError={this.onLoginError}
-        />
+        <form onSubmit={this.handleSubmit}>
+          Username:
+          <input type="text" value={this.state.username} onChange={this.handleUsernameChange} />
+          <br />
+          Paassword:
+          <input type="password" value={this.state.password} onChange={this.handlePasswordChange} />
+          <br />
+          <button disabled={this.state.loading} type="submit">Login</button>
+        </form>
       </div>
     );
   }
@@ -49,4 +78,5 @@ export default class Login extends Component {
 
 Login.propTypes = {
   onLoginDone: PropTypes.func.isRequired,
+  device: PropTypes.instanceOf(Device).isRequired,
 };

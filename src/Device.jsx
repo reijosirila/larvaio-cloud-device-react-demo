@@ -34,12 +34,8 @@ export default class DeviceComponent extends Component {
       closed: false,
       nodes: [],
     };
-    const { deviceId, getToken, unitId } = props;
-    // create device instance
-    this.device = new Device(deviceId, unitId, getToken, {
-      server: 'wss://broker.larva.io',
-      timeout: 8000,
-    });
+    // eslint-disable-next-line react/destructuring-assignment
+    this.device = this.props.device;
     this.deviceClosed = this.deviceClosed.bind(this);
     this.createReactComponent = this.createReactComponent.bind(this);
     // handle broadcasted changes
@@ -58,7 +54,6 @@ export default class DeviceComponent extends Component {
         loading: false,
       });
     } catch (err) {
-      await this.device.close();
       alert(`Failed to connect to device: ${err.message}`);
     }
   }
@@ -66,7 +61,6 @@ export default class DeviceComponent extends Component {
   async componentWillUnmount() {
     this.device.removeEventListener('broadcast', DeviceComponent.handleBroadcast);
     this.device.removeEventListener('close', this.deviceClosed);
-    await this.device.close();
   }
 
   async deviceClosed() {
@@ -145,7 +139,5 @@ export default class DeviceComponent extends Component {
 }
 
 DeviceComponent.propTypes = {
-  getToken: PropTypes.func.isRequired,
-  deviceId: PropTypes.string.isRequired,
-  unitId: PropTypes.string.isRequired,
+  device: PropTypes.instanceOf(Device).isRequired,
 };

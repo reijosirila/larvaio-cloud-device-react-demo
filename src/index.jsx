@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { setupConfig } from '@larva.io/webcomponents-react';
-import '@larva.io/webcomponents-cognito-login-react';
 import App from './App';
 
 setupConfig({

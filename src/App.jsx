@@ -1,47 +1,54 @@
+/* eslint-disable react/destructuring-assignment */
 import './App.css';
-import { Component, createRef } from 'react';
-import { isReady, LarCognitoConfig } from '@larva.io/webcomponents-cognito-login-react';
+import { Component } from 'react';
+import { Device as CloudDevice } from '@larva.io/clouddevice';
 import Login from './Login';
 import Device from './Device';
+
+const DEVICE_ID = '76696365-733a-5465-7374-446576696365';
+const UNIT_ID = '00000000-0000-0000-0000-000000000000';
 
 export default class App extends Component {
   constructor(props) {
     super(props);
-    this.Cognito = createRef();
+    this.token = '';
     this.state = {
       loggedIn: false,
+      opened: false,
     };
     this.logout = this.logout.bind(this);
-    this.changeLoggedInState = this.changeLoggedInState.bind(this);
+    this.setToken = this.setToken.bind(this);
+    this.setToken = this.setToken.bind(this);
     this.getToken = this.getToken.bind(this);
+    this.device = new CloudDevice(DEVICE_ID, UNIT_ID, this.getToken, {
+      server: 'wss://broker.larva.io',
+      timeout: 8000,
+    });
   }
 
   async componentDidMount() {
-    await isReady();
-    this.changeLoggedInState();
+    await this.device.open()
+      // eslint-disable-next-line no-alert
+      .catch((err) => alert(err.message));
+    this.setToken();
+    this.setState({
+      opened: true,
+    });
   }
 
-  async getToken() {
-    const token = await this.Cognito.current.getAccessToken();
-    return token;
+  getToken() {
+    return this.token;
   }
 
-  async logout() {
-    await this.Cognito.current.logout();
-    this.changeLoggedInState();
+  setToken(token) {
+    this.token = token;
+    this.setState({
+      loggedIn: !!this.token,
+    });
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  async changeLoggedInState() {
-    try {
-      const token = await this.Cognito.current.getAccessToken();
-      this.setState({
-        loggedIn: !!token,
-      });
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
-    }
+  logout() {
+    this.setToken('');
   }
 
   render() {
@@ -50,20 +57,14 @@ export default class App extends Component {
       ? (
         <div>
           <button type="button" onClick={this.logout}>Logout</button>
-          <Device deviceId="af88a67d-39f7-4fc0-adaa-2b97c633cac9" unitId="0657b857-2532-4d32-826d-508834b88196" getToken={this.getToken} />
+          <Device device={this.device} />
         </div>
       )
-      : <Login onLoginDone={this.changeLoggedInState} />;
+      : <Login device={this.device} onLoginDone={this.setToken} />;
     return (
       <div className="App">
-        <LarCognitoConfig
-          ref={this.Cognito}
-          cognito-region="eu-central-1"
-          cognito-pool-id="eu-central-1_iBzUxlCpJ"
-          cognito-client-id="5lrklc6frlg4sik3dnr0koq70h"
-          storage-type="local"
-        />
-        {SubComponent}
+        {!this.state.opened && <span>Opening connection to broker....</span>}
+        {this.state.opened && SubComponent}
       </div>
     );
   }
