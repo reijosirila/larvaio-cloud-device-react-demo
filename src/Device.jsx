@@ -131,14 +131,12 @@ export default class DeviceComponent extends Component {
       <div>
         {Loading}
         {Closed}
-        <Components.LarApp>
-          <div className="favorites-grid">
-            {dynamicFavoriteComponents}
-          </div>
-          <div className="grid">
-            {dynamicComponents}
-          </div>
-        </Components.LarApp>
+        <div className="favorites-grid">
+          {dynamicFavoriteComponents}
+        </div>
+        <div className="grid">
+          {dynamicComponents}
+        </div>
       </div>
     );
   }

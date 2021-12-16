@@ -1,6 +1,7 @@
 import './App.css';
 import { Component, createRef } from 'react';
 import { isReady, LarCognitoConfig } from '@larva.io/webcomponents-cognito-login-react';
+import { LarApp } from '@larva.io/webcomponents-react';
 import Login from './Login';
 import Device from './Device';
 
@@ -50,21 +51,23 @@ export default class App extends Component {
       ? (
         <div>
           <button type="button" onClick={this.logout}>Logout</button>
-          <Device deviceId="af88a67d-39f7-4fc0-adaa-2b97c633cac9" unitId="0657b857-2532-4d32-826d-508834b88196" getToken={this.getToken} />
+          <Device deviceId="af88a67d-39f7-4fc0-adaa-2b97c633cac9" unitId="d01f33cb-a919-4198-b565-1771efc1fd53" getToken={this.getToken} />
         </div>
       )
       : <Login onLoginDone={this.changeLoggedInState} />;
     return (
-      <div className="App">
-        <LarCognitoConfig
-          ref={this.Cognito}
-          cognito-region="eu-central-1"
-          cognito-pool-id="eu-central-1_iBzUxlCpJ"
-          cognito-client-id="5lrklc6frlg4sik3dnr0koq70h"
-          storage-type="local"
-        />
-        {SubComponent}
-      </div>
+      <LarApp>
+        <div className="App">
+          <LarCognitoConfig
+            ref={this.Cognito}
+            cognito-region="eu-central-1"
+            cognito-pool-id="eu-central-1_dhuZEPbYR"
+            cognito-client-id="1dao6iiu2s5t3sb1itoibv8tlr"
+            storage-type="local"
+          />
+          {SubComponent}
+        </div>
+      </LarApp>
     );
   }
 }
