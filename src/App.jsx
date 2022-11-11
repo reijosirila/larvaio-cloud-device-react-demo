@@ -51,7 +51,7 @@ export default class App extends Component {
       ? (
         <div>
           <button type="button" onClick={this.logout}>Logout</button>
-          <Device deviceId="af88a67d-39f7-4fc0-adaa-2b97c633cac9" unitId="d01f33cb-a919-4198-b565-1771efc1fd53" getToken={this.getToken} />
+          <Device deviceId="af88a67d-39f7-4fc0-adaa-2b97c633cac9" unitId="c2eecc51-a92a-4278-8ccb-90d92f2ef790" getToken={this.getToken} />
         </div>
       )
       : <Login onLoginDone={this.changeLoggedInState} />;
