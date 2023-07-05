@@ -12,6 +12,22 @@ export default class DeviceComponent extends Component {
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
+  static sortNodes(a, b) {
+    return parseInt(b.ui.rating, 10) - parseInt(a.ui.rating, 10);
+  }
+
+  static assignComponents(item) {
+    const componentName = DeviceComponent.pascalize(item.node.type);
+    if (typeof Components[componentName] === 'undefined') {
+      console.error(`Cannot find Larva.io WebComonent for ${componentName}`);
+      return item;
+    }
+    const linkednodes = item.ui.linkednodes ? item.ui.linkednodes
+      .map(DeviceComponent.assignComponents)
+      .filter((e) => !!e.component) : [];
+    return { ...item, ui: { ...item.ui, linkednodes }, component: Components[componentName] };
+  }
+
   // device broadcast messages handler
   static async handleBroadcast(event /* @typeof CustomEvent */) {
     const detail = event && event.detail ? event.detail : {};
@@ -41,7 +57,8 @@ export default class DeviceComponent extends Component {
       timeout: 8000,
     });
     this.deviceClosed = this.deviceClosed.bind(this);
-    this.createReactComponent = this.createReactComponent.bind(this);
+    this.createReactComponents = this.createReactComponents.bind(this);
+    this.findLinkedNodes = this.findLinkedNodes.bind(this);
     // handle broadcasted changes
     this.device.addEventListener('broadcast', DeviceComponent.handleBroadcast);
     this.device.addEventListener('close', this.deviceClosed);
@@ -77,9 +94,25 @@ export default class DeviceComponent extends Component {
     });
   }
 
-  createReactComponent(node) {
+  findLinkedNodes(item) {
+    const { nodes } = this.state;
+    let linkednodes = [];
+    if (Array.isArray(item.ui.linkednodes) && item.ui.linkednodes.length > 0) {
+      linkednodes = item.ui.linkednodes
+        .map((nodeId) => nodes.find((n) => n.node.id === nodeId))
+        .filter((n) => !!n)
+        .sort(DeviceComponent.sortNodes); // sort subnodes by rating
+    }
+    return { ...item, ui: { ...item.ui, linkednodes } };
+  }
+
+  createReactComponents(node, opts = {}) {
     if (!node || !node.ui || !node.node || !node.component) {
       throw new Error('Invalid node object');
+    }
+    let children = [];
+    if (node.ui.linkednodes) {
+      children = node.ui.linkednodes.map((linkednode) => this.createReactComponents(linkednode, { nodeSize: 'small', color: 'dark' }));
     }
     return React.createElement(node.component, {
       color: 'primary',
@@ -92,9 +125,10 @@ export default class DeviceComponent extends Component {
       nodeId: node.node.id,
       key: node.node.id,
       log: node.ui.log,
+      ...opts,
       onOutput: this.device.handleNodeOutput,
       onRequest: this.device.handleNodeRequest,
-    });
+    }, ...children);
   }
 
   render() {
@@ -103,29 +137,20 @@ export default class DeviceComponent extends Component {
     const Closed = closed ? <div>Device connection closed</div> : <span />;
     // load WebComponents from getUINodes response
     const nodesWithComponents = nodes
-      // filter nodes that should be visible
-      .filter((e) => !!e.ui.visible)
-      // sort by rating
-      .sort((a, b) => parseInt(b.ui.rating, 10) - parseInt(a.ui.rating, 10))
-      .map((item) => {
-        const componentName = DeviceComponent.pascalize(item.node.type);
-        if (typeof Components[componentName] === 'undefined') {
-          console.error(`Cannot find Larva.io WebComonent for ${componentName}`);
-          return item;
-        }
-        return { ...item, component: Components[componentName] };
-      })
-      // filter nodes that doesnt have WebComponent
-      .filter((e) => !!e.component);
+      .sort(DeviceComponent.sortNodes) // sort by rating
+      .map(this.findLinkedNodes) // find linked nodes by id
+      .filter((e) => !!e.ui.visible) // filter nodes that should be visible
+      .map(DeviceComponent.assignComponents) // assing React WebComponent components
+      .filter((e) => !!e.component); // filter nodes that doesn't have WebComponent
 
     // wrap it up, set props and event listeners
     const dynamicComponents = nodesWithComponents
       .filter((e) => !e.ui.favorite)
-      .map(this.createReactComponent);
+      .map(this.createReactComponents); // create react components
 
     const dynamicFavoriteComponents = nodesWithComponents
       .filter((e) => !!e.ui.favorite)
-      .map(this.createReactComponent);
+      .map(this.createReactComponents); // create react components
 
     return (
       <div>
