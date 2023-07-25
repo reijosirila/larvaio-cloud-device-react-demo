@@ -1,7 +1,7 @@
 import './App.css';
 import { Component, createRef } from 'react';
 import { isReady, LarCognitoConfig } from '@larva.io/webcomponents-cognito-login-react';
-import { LarApp } from '@larva.io/webcomponents-react';
+import { LarApp, i18n } from '@larva.io/webcomponents-react';
 import Login from './Login';
 import Device from './Device';
 
@@ -11,10 +11,18 @@ export default class App extends Component {
     this.Cognito = createRef();
     this.state = {
       loggedIn: false,
+      lang: 'en',
     };
     this.logout = this.logout.bind(this);
     this.changeLoggedInState = this.changeLoggedInState.bind(this);
     this.getToken = this.getToken.bind(this);
+    this.changeLanguage = this.changeLanguage.bind(this);
+    i18n.addResourceBundle('et', 'larva', {
+      door: {
+        locked: 'Lukustatud',
+        unlocked: 'Lukust lahti',
+      },
+    });
   }
 
   async componentDidMount() {
@@ -45,8 +53,20 @@ export default class App extends Component {
     }
   }
 
+  changeLanguage(event) {
+    const lang = event.target.value;
+    this.setState({ lang });
+    i18n.changeLanguage(lang);
+  }
+
   render() {
-    const { loggedIn } = this.state;
+    const { loggedIn, lang } = this.state;
+    const LangComponent = (
+      <select id="lang" onChange={this.changeLanguage} value={lang}>
+        <option value="et">eesti keel</option>
+        <option value="en">English</option>
+      </select>
+    );
     const SubComponent = loggedIn
       ? (
         <div>
@@ -57,6 +77,7 @@ export default class App extends Component {
       : <Login onLoginDone={this.changeLoggedInState} />;
     return (
       <LarApp>
+        {LangComponent}
         <div className="App">
           <LarCognitoConfig
             ref={this.Cognito}
